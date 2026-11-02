@@ -375,14 +375,6 @@ const STORAGE_KEY = 'flip7_state_v2';
 const STRIPES = ['#4ecdc4', '#ff6b35', '#ffd23f', '#c77dff', '#5ec8ff', '#ff8fa3'];
 const AVATARS = ['🦊','🐯','🐸','🐼','🦁','🐨'];
 
-let state = load() || {
-  goal: 200,
-  players: [
-    { name: 'Jogador 1', total: 0, rounds: 0, wins: 0 },
-    { name: 'Jogador 2', total: 0, rounds: 0, wins: 0 }
-  ]
-};
-
 function safeStorage() {
   try {
     const k = '__t__';
@@ -405,6 +397,14 @@ function save() {
   if (!STORAGE_OK) return;
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
 }
+
+let state = load() || {
+  goal: 200,
+  players: [
+    { name: 'Jogador 1', total: 0, rounds: 0, wins: 0 },
+    { name: 'Jogador 2', total: 0, rounds: 0, wins: 0 }
+  ]
+};
 
 const playersEl = document.getElementById('players');
 const goalInput = document.getElementById('goal');

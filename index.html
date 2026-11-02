@@ -175,6 +175,45 @@
   }
   .remove-btn:active { color: var(--danger); }
 
+  .wins-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    background: rgba(255,210,63,0.08);
+    border: 1px solid var(--card-edge);
+    border-radius: 12px;
+    width: fit-content;
+  }
+  .wins-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .wins-count {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--accent2);
+    min-width: 18px;
+    text-align: center;
+  }
+  .wins-btn {
+    background: var(--card-edge);
+    color: var(--text);
+    border: none;
+    border-radius: 7px;
+    width: 26px;
+    height: 26px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .wins-btn:active { transform: scale(0.9); }
+
   .player-bottom {
     display: grid;
     grid-template-columns: 1fr auto auto;
@@ -339,8 +378,8 @@ const AVATARS = ['🦊','🐯','🐸','🐼','🦁','🐨'];
 let state = load() || {
   goal: 200,
   players: [
-    { name: 'Jogador 1', total: 0, rounds: 0 },
-    { name: 'Jogador 2', total: 0, rounds: 0 }
+    { name: 'Jogador 1', total: 0, rounds: 0, wins: 0 },
+    { name: 'Jogador 2', total: 0, rounds: 0, wins: 0 }
   ]
 };
 
@@ -430,6 +469,43 @@ function render(bumpIndex) {
     top.appendChild(nameWrap);
     top.appendChild(removeBtn);
 
+    if (p.wins === undefined) p.wins = 0;
+    const winsRow = document.createElement('div');
+    winsRow.className = 'wins-row';
+
+    const winsLabel = document.createElement('span');
+    winsLabel.className = 'wins-label';
+    winsLabel.textContent = '🏆 jogos';
+
+    const winsMinus = document.createElement('button');
+    winsMinus.type = 'button';
+    winsMinus.className = 'wins-btn';
+    winsMinus.textContent = '−';
+    winsMinus.addEventListener('click', () => {
+      if (state.players[i].wins > 0) state.players[i].wins -= 1;
+      save();
+      render();
+    });
+
+    const winsCount = document.createElement('span');
+    winsCount.className = 'wins-count';
+    winsCount.textContent = p.wins;
+
+    const winsPlus = document.createElement('button');
+    winsPlus.type = 'button';
+    winsPlus.className = 'wins-btn';
+    winsPlus.textContent = '+';
+    winsPlus.addEventListener('click', () => {
+      state.players[i].wins += 1;
+      save();
+      render();
+    });
+
+    winsRow.appendChild(winsLabel);
+    winsRow.appendChild(winsMinus);
+    winsRow.appendChild(winsCount);
+    winsRow.appendChild(winsPlus);
+
     const bottom = document.createElement('div');
     bottom.className = 'player-bottom';
 
@@ -467,6 +543,7 @@ function render(bumpIndex) {
     progressTrack.appendChild(progressFill);
 
     div.appendChild(top);
+    div.appendChild(winsRow);
     div.appendChild(bottom);
     div.appendChild(progressTrack);
 
@@ -494,7 +571,10 @@ function addRound(i) {
     save();
     render(i);
     if (!wasWinner && state.players[i].total >= state.goal) {
+      state.players[i].wins += 1;
+      save();
       fireConfetti();
+      render(i);
     }
   }
 }
@@ -504,7 +584,7 @@ document.getElementById('addPlayerBtn').addEventListener('click', () => {
     alert('Máximo de 6 jogadores.');
     return;
   }
-  state.players.push({ name: 'Jogador ' + (state.players.length + 1), total: 0, rounds: 0 });
+  state.players.push({ name: 'Jogador ' + (state.players.length + 1), total: 0, rounds: 0, wins: 0 });
   save();
   render();
 });
@@ -514,7 +594,7 @@ document.getElementById('resetRoundBtn').addEventListener('click', () => {
 });
 
 document.getElementById('resetAllBtn').addEventListener('click', () => {
-  if (confirm('Zerar pontos de todos os jogadores? (mantém os nomes)')) {
+  if (confirm('Zerar pontos de todos os jogadores? (mantém nomes e jogos ganhos)')) {
     state.players.forEach(p => { p.total = 0; p.rounds = 0; });
     save();
     render();
